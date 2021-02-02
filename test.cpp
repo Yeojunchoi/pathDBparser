@@ -47,8 +47,10 @@ int main(){
     std::cout.precision(10);
     std::vector<Node> nodelist;
     int nodenum=0;
+    
     while (in) {
-      const char* name;
+      const char* nodename;
+      std::string nodename2;
       double lat,lon;
       float alt;
 
@@ -59,26 +61,30 @@ int main(){
 
       std::vector<std::string> result=tokenize_operator(buf);
       
-      if(result[0]=="#"){std::cout<<"pass index row"<<std::endl; continue;}  //erase out first index row  # name    lat     lon     alt
+      if(result[0]=="#"){std::cout<<"pass index row"<<std::endl; continue;}  //erase out first index row  # nodename    lat     lon     alt
       
       for (int i = 0; i < result.size(); i++)
       {                                 
         switch (i)
         {
         case 0:
-          name =static_cast<std::string>(result[i]).c_str();
-          std::cout<<name<<std::endl; 
+          nodename =static_cast<std::string>(result[i]).c_str();
+          nodename2 =static_cast<std::string>(result[i]);
+          std::cout<<nodename<<std::endl;
           break;
         case 1:
           lat=stod(static_cast<std::string>(result[i]));
+          //std::cout<<lat<<std::endl; 
           break;
 
         case 2:
           lon=stod(static_cast<std::string>(result[i]));
+          //std::cout<<lon<<std::endl; 
           break;
 
         case 3:
           alt=stof(static_cast<std::string>(result[i]));
+          //std::cout<<alt<<std::endl; 
           break;
         
         default:
@@ -86,29 +92,30 @@ int main(){
           break;
         }
       }
-      std::cout<<name<<lat<<lon<<alt<<std::endl;
-      /*Node tmp;
-      tmp.setNode(name,lat,lon,alt);
+      std::cout<<nodename<<std::endl;
+
+      Node tmp;
+      tmp.setNode(nodename,lat,lon,alt);
       nodelist.push_back(tmp);
       nodelist[nodenum].printout();
-      std::cout<<nodelist[nodenum].getName()<<std::endl;*/
+      std::cout<<nodelist[nodenum].getName()<<std::endl;
       nodenum++;
     }
     
-    for (int i = 0; i < nodelist.size(); i++)
+   /* for (int i = 0; i < nodelist.size(); i++)
     {
       std::cout<<"nodelist["<<i<<"] :"<<std::endl;
       nodelist[i].printout();
-    }
+    }*/
     
 
    /* std::vector<Node> nodearray;
      Node tmp;
-     const char* name="gellp";
-     tmp.setNode(name,123.123123,123.22222,334.21);
+     const char* nodename="gellp";
+     tmp.setNode(nodename,123.123123,123.22222,334.21);
      nodearray.push_back(tmp);
      nodearray.push_back(tmp);
-     std::cout<<tmp.getName()<<std::endl;
+     std::cout<<tmp.getnodename()<<std::endl;
      nodearray[0].printout();
      nodearray[1].printout();*/
      

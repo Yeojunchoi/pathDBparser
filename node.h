@@ -43,6 +43,7 @@ const char* Node::getName(){
     return name;
 }
 
+
 double Node::getLatitude(){
     return latitude;
 }
