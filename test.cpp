@@ -53,6 +53,7 @@ int main(){
       std::string nodename2;
       double lat,lon;
       float alt;
+      int name;
 
 
       in.getline(buf, 100);
@@ -69,7 +70,7 @@ int main(){
         {
         case 0:
           nodename =static_cast<std::string>(result[i]).c_str();
-          nodename2 =static_cast<std::string>(result[i]);
+          nodename2 =static_cast<std::string>(result[i]);                    //something wrong, set some string variable makes memory error correct
           std::cout<<nodename<<std::endl;
           break;
         case 1:
