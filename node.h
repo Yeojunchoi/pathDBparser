@@ -6,15 +6,16 @@
 class Node{
     public:
         Node();
-        void setNode(const char*,float,float,float);
+        void setNode(const char*,double,double,float);
+        void printout();
         const char* getName();
-        float getLatitude();
-        float getLongitude();
+        double getLatitude();
+        double getLongitude();
         float getAltitude();
     private:
         const char* name;
-        float latitude;
-        float longitude;
+        double latitude;
+        double longitude;
         float altitude;
 };
 
@@ -26,22 +27,27 @@ Node::Node(){
 
 }
 
-void Node::setNode(const char* n,float lat, float lon, float alt){
+void Node::setNode(const char* n,double lat, double lon, float alt){
     name=n;
     latitude=lat;
     longitude=lon;
     altitude=alt;
 }
 
+void Node::printout(){
+    std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
+    //std::cout<<"node name: "<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
+}
+
 const char* Node::getName(){
     return name;
 }
 
-float Node::getLatitude(){
+double Node::getLatitude(){
     return latitude;
 }
 
-float Node::getLongitude(){
+double Node::getLongitude(){
     return longitude;
 }
 

@@ -34,7 +34,7 @@ int main(){
     std::cout << "vec 의 " << i + 1 << " 번째 원소 :: " << vec[i] << std::endl;
   }*/
 
-
+  
     std::ifstream in("node.txt");
 
      char buf[100];
@@ -44,37 +44,41 @@ int main(){
       return 0;
     }
 
-    std::cout.precision(12);
+    std::cout.precision(10);
     std::vector<Node> nodelist;
+    int nodenum=0;
     while (in) {
-      int nodenum=0;
-      in.getline(buf, 100);
       const char* name;
-      float lat,lon,alt;
-      std::cout << buf << std::endl;
+      double lat,lon;
+      float alt;
+
+
+      in.getline(buf, 100);
+      
+      if(in.eof()==true){break;}                                             //detect eof and break out, prevents tokenizer seg_fault
+
       std::vector<std::string> result=tokenize_operator(buf);
+      
+      if(result[0]=="#"){std::cout<<"pass index row"<<std::endl; continue;}  //erase out first index row  # name    lat     lon     alt
+      
       for (int i = 0; i < result.size(); i++)
-      {
-        if(result[i]=="#"){std::cout<<"worked"<<std::endl; break;}                                    //erase out first index row  # name    lat     lon     alt
+      {                                 
         switch (i)
         {
         case 0:
           name =static_cast<std::string>(result[i]).c_str();
-          //std::cout<<name<<std::endl;
+          std::cout<<name<<std::endl; 
           break;
         case 1:
-          lat=stof(static_cast<std::string>(result[i]));
-          //std::cout<<lat<<std::endl;
+          lat=stod(static_cast<std::string>(result[i]));
           break;
 
         case 2:
-          lon=stof(static_cast<std::string>(result[i]));
-          //std::cout<<lon<<std::endl;
+          lon=stod(static_cast<std::string>(result[i]));
           break;
 
         case 3:
           alt=stof(static_cast<std::string>(result[i]));
-          //std::cout<<alt<<std::endl;
           break;
         
         default:
@@ -82,10 +86,34 @@ int main(){
           break;
         }
       }
-
-      std::cout<<lat<<" "<<lon<<" "<<alt<<" "<<std::endl;
-      //nodelist[nodenum].setNode(name,lat,lon,alt);
+      std::cout<<name<<lat<<lon<<alt<<std::endl;
+      /*Node tmp;
+      tmp.setNode(name,lat,lon,alt);
+      nodelist.push_back(tmp);
+      nodelist[nodenum].printout();
+      std::cout<<nodelist[nodenum].getName()<<std::endl;*/
+      nodenum++;
     }
+    
+    for (int i = 0; i < nodelist.size(); i++)
+    {
+      std::cout<<"nodelist["<<i<<"] :"<<std::endl;
+      nodelist[i].printout();
+    }
+    
+
+   /* std::vector<Node> nodearray;
+     Node tmp;
+     const char* name="gellp";
+     tmp.setNode(name,123.123123,123.22222,334.21);
+     nodearray.push_back(tmp);
+     nodearray.push_back(tmp);
+     std::cout<<tmp.getName()<<std::endl;
+     nodearray[0].printout();
+     nodearray[1].printout();*/
+     
+    
+
 
     return 0;
 }
