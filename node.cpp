@@ -26,7 +26,13 @@ void Node::setConnection(std::vector<std::string> connected_nodes,std::vector<st
 
 void Node::printout(){
     std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
-    std::cout<<con_mat[1][1]<<std::endl;
+    std::cout<<"con_mat"<<std::endl;
+    for(auto &i:con_mat){
+        for (auto &j:i){
+            std::cout<<j<<"\t";
+        }    
+        std::cout<<std::endl;
+    }
     //std::cout<<"node name: "<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
 }
 

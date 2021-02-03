@@ -22,7 +22,7 @@ std::vector<std::string> tokenize_operator(const std::string& data) {
         return result;
     }
 
-std::vector<Node> parse_node_file(std::string nodefile){
+std::vector<Node> parse_node_file(std::string nodefile,std::vector<Node> &nodelist){
         std::ifstream in(nodefile);
 
         char buf[100];
@@ -33,7 +33,6 @@ std::vector<Node> parse_node_file(std::string nodefile){
         }
 
         std::cout.precision(10);
-        std::vector<Node> nodelist;
         int nodenum=0;
         
         while (in) {
@@ -91,7 +90,7 @@ std::vector<Node> parse_node_file(std::string nodefile){
         return nodelist;
 }//parse_node_file end
 
-void parse_connection_file(std::vector<Node> nodelist)
+void parse_connection_file(std::vector<Node> &nodelist)
 {
   namespace fs=boost::filesystem;
   std::vector<fs::path> files;
@@ -210,7 +209,8 @@ int main(){
 
 
   
-   std::vector<Node> parsedlist=parse_node_file("node.txt");
+   std::vector<Node> parsedlist;
+   parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
 
