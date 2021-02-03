@@ -1,6 +1,15 @@
 #ifndef NODE_H
 #define NODE_H
 #include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
+#include <fstream>
+#include <boost/filesystem.hpp>
+
+
+
+
 
 class Node{
     public:
@@ -16,6 +25,10 @@ class Node{
         double latitude;
         double longitude;
         float altitude;
+        std::vector<std::vector<std::string>> connections;
 };
+
+
+
 
 #endif

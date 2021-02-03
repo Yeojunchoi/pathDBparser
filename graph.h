@@ -2,6 +2,7 @@
 #define GRAPH_H
 #include "node.h"
 #include <vector>
+#include <boost/filesystem.hpp>
 
 
 class ConnectionGraph{

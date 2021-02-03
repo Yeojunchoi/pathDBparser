@@ -4,7 +4,10 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${HOME}/pathDB**"
+                "${HOME}/pathDB**",
+                "/usr/include",
+                "/usr/lib"
+
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

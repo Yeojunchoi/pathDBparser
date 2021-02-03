@@ -1,5 +1,5 @@
 #include "node.h"
-#include <iostream>
+
 
 Node::Node(){
     name=" ";
@@ -8,6 +8,7 @@ Node::Node(){
     altitude=0;
 
 }
+
 
 void Node::setNode(std::string n,double lat, double lon, float alt){
     name=n;
