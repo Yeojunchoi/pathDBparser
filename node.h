@@ -7,14 +7,11 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
-
-
-
-
 class Node{
     public:
         Node();
         void setNode(std::string,double,double,float);
+        void setConnection(std::vector<std::string>, std::vector<std::string>, std::vector<std::string>);
         void printout();
         std::string getName();
         double getLatitude();
@@ -25,10 +22,8 @@ class Node{
         double latitude;
         double longitude;
         float altitude;
-        std::vector<std::vector<std::string>> connections;
+        std::vector<std::vector<std::string>> con_mat;
 };
-
-
 
 
 #endif

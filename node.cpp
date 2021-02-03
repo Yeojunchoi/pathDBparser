@@ -9,7 +9,6 @@ Node::Node(){
 
 }
 
-
 void Node::setNode(std::string n,double lat, double lon, float alt){
     name=n;
     latitude=lat;
@@ -17,8 +16,17 @@ void Node::setNode(std::string n,double lat, double lon, float alt){
     altitude=alt;
 }
 
+void Node::setConnection(std::vector<std::string> connected_nodes,std::vector<std::string> costs,std::vector<std::string> routes){
+    
+    con_mat.push_back(connected_nodes);
+    con_mat.push_back(costs);
+    con_mat.push_back(routes);
+
+}
+
 void Node::printout(){
     std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
+    std::cout<<con_mat[1][1]<<std::endl;
     //std::cout<<"node name: "<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
 }
 
@@ -38,6 +46,7 @@ double Node::getLongitude(){
 float Node::getAltitude(){
     return altitude;
 }
+
 
 
 
