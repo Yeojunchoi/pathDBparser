@@ -10,13 +10,16 @@
 class Node{
     public:
         Node();
+        Node(const Node &);
         void setNode(std::string,double,double,float);
         void setConnection(std::vector<std::string>, std::vector<std::string>, std::vector<std::string>);
+        void copyNode(const Node &);
         void printout();
         std::string getName();
         double getLatitude();
         double getLongitude();
         float getAltitude();
+        std::vector<std::vector<std::string>>* getConnection();
     private:
         std::string name;
         double latitude;

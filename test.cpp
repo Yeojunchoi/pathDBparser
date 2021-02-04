@@ -205,21 +205,76 @@ void parse_connection_file(std::vector<Node> &nodelist)
     }
 } //parse_connection_file end
 
+
+float cal_cost(std::vector<Node> list){
+    float f,g,h;
+    std::vector<std::string> connectionName;
+    std::vector<float> costs;
+
+    connectionName=list.back().getConnection()[2]; ////////mor getta!!!!!
+}
+
+
+int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string start, std::string target){
+    bool flag1,flag2 =false;
+    Node departure;
+    Node arrival;
+        for(auto &node:nodelist){
+            if(node.getName()==start){
+                flag1 =true;
+                departure.copyNode(node);
+                std::cout<<"found starting node"<<std::endl;
+            }
+        else if(node.getName()==target){
+            flag2 =true;
+            arrival.copyNode(node);
+            std::cout<<"found target node"<<std::endl;
+        }
+    }
+    
+    if(!flag1 || !flag2){
+        std::cout<<"Check node name"<<std::endl;
+        return -1;
+    }
+    
+    std::vector<Node> openlist;
+    std::vector<Node> closedlist;
+    
+    openlist.push_back(departure);
+    
+    for(auto & connection:departure.getConnection()[2]){
+        calcost
+    }                                                                  //Check node name input
+
+
+
+
+
+}
+
+
+
 int main(){
 
-
-  
    std::vector<Node> parsedlist;
+   std::vector<Node> resultpath;
    parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
 
 
+    
+    std::cout<<a_star_path(parsedlist,resultpath,"Base","A-2")<<std::endl;
+
    
     
-   for(auto &list : parsedlist){
+   /*for(auto &list : parsedlist){
        list.printout();
-   }
+
+        //std::vector<std::vector<std::string>> *mat_ref=list.getConnection();
+        //std::cout<<mat_ref->at(0).at(0)<<std::endl;
+   }*/
+
 
 
      

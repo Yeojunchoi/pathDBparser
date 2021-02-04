@@ -17,5 +17,7 @@ int main(){
             cout<<j<<std::endl;
         }    
     }
+
+    
     
 }

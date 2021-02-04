@@ -9,6 +9,24 @@ Node::Node(){
 
 }
 
+Node::Node(const Node &copyfrom){
+
+    name=copyfrom.name;
+    latitude=copyfrom.latitude;
+    longitude=copyfrom.longitude;
+    altitude=copyfrom.altitude;
+    con_mat=copyfrom.con_mat;
+    
+}
+
+void Node::copyNode(const Node &copyfrom){
+    name=copyfrom.name;
+    latitude=copyfrom.latitude;
+    longitude=copyfrom.longitude;
+    altitude=copyfrom.altitude;
+    con_mat=copyfrom.con_mat;
+}
+
 void Node::setNode(std::string n,double lat, double lon, float alt){
     name=n;
     latitude=lat;
@@ -53,6 +71,10 @@ float Node::getAltitude(){
     return altitude;
 }
 
+std::vector<std::vector<std::string>>* Node::getConnection(){
+
+    return &con_mat;
+}
 
 
 
