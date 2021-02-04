@@ -6,10 +6,38 @@
 #include <sstream>
 #include <cctype>
 #include <boost/filesystem.hpp>
+#include <cmath>
 
 #include "node.h"
+
+#define pi 3.14159265358979323846
 //#include "tools.h"
 //#include "graph.h"
+
+double deg2rad(double deg) {
+return (deg * pi / 180);
+}
+
+//  This function converts radians to decimal degrees
+double rad2deg(double rad) {
+return (rad * 180 / pi);
+}
+
+double dist_btw_lla_points(double lat_origin,double lon_origin, double lat_far,double lon_far){
+    float R=6371*pow(10,3);
+    double delta_phi=deg2rad((lat_far-lat_origin));
+    double delta_lambda=deg2rad((lon_far-lon_origin));
+
+    double a=sin(delta_phi/2)*sin(delta_phi/2)+
+             cos(deg2rad(lat_origin))*cos(deg2rad(lat_far))*
+             sin(delta_lambda/2)*sin(delta_lambda);
+
+    double c=2*atan2(sqrt(a),sqrt(1-a));
+    double d=R*c;
+
+    return d;
+}
+
 
 std::vector<std::string> tokenize_operator(const std::string& data) {
         std::vector<std::string> result;
@@ -206,12 +234,38 @@ void parse_connection_file(std::vector<Node> &nodelist)
 } //parse_connection_file end
 
 
-float cal_cost(std::vector<Node> list){
+
+float cal_heuristic_cost(Node now, Node arrival){
+    return dist_btw_lla_points(now.getLatitude(),now.getLongitude(),arrival.getLatitude(),arrival.getLongitude())/1000.0;
+}
+
+float cal_cost(std::vector<Node> list, Node arrival){
     float f,g,h;
     std::vector<std::string> connectionName;
-    std::vector<float> costs;
+    std::vector<float> g_cost;
+    std::vector<float> h_cost;
+    std::vector<float> f_cost;
+    for(auto &i:list)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            for(auto & k:i.getConnection()->at(j))
+            {
+                if(j==0)
+                {
+                    connectionName.push_back(k);
+                }
+                else if(j==1)
+                {
+                    g_cost.push_back(stof(k));
+                }
+            }
+        }    
 
-    connectionName=list.back().getConnection()[2]; ////////mor getta!!!!!
+
+    }
+
+   
 }
 
 
@@ -240,11 +294,9 @@ int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string
     std::vector<Node> openlist;
     std::vector<Node> closedlist;
     
-    openlist.push_back(departure);
+    //openlist.push_back(departure);
     
-    for(auto & connection:departure.getConnection()[2]){
-        calcost
-    }                                                                  //Check node name input
+                                                          //Check node name input
 
 
 
@@ -261,10 +313,19 @@ int main(){
    parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
-
-
     
-    std::cout<<a_star_path(parsedlist,resultpath,"Base","A-2")<<std::endl;
+
+    cal_cost(parsedlist);
+    //std::cout<<dist_btw_points(37.222222,127.222222,37.222223,127.2222223);    
+    
+    
+    /*
+    for(auto & k:parsedlist[2].getConnection()->at(1)){
+        std::cout<<k<<std::endl;
+    }*/
+    
+    
+    //std::cout<<a_star_path(parsedlist,resultpath,"Base","A-2")<<std::endl;
 
    
     
