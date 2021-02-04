@@ -225,6 +225,8 @@ void parse_connection_file(std::vector<Node> &nodelist)
             }
             std::cout<<std::endl;
 
+            
+
 
             node.setConnection(connected_nodes,costs,routes);
         }

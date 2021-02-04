@@ -15,7 +15,7 @@ Node::Node(const Node &copyfrom){
     latitude=copyfrom.latitude;
     longitude=copyfrom.longitude;
     altitude=copyfrom.altitude;
-    con_mat=copyfrom.con_mat;
+    connect_list=copyfrom.connect_list;
     
 }
 
@@ -24,7 +24,7 @@ void Node::copyNode(const Node &copyfrom){
     latitude=copyfrom.latitude;
     longitude=copyfrom.longitude;
     altitude=copyfrom.altitude;
-    con_mat=copyfrom.con_mat;
+    connect_list=copyfrom.connect_list;
 }
 
 void Node::setNode(std::string n,double lat, double lon, float alt){
@@ -34,18 +34,27 @@ void Node::setNode(std::string n,double lat, double lon, float alt){
     altitude=alt;
 }
 
-void Node::setConnection(std::vector<std::string> connected_nodes,std::vector<std::string> costs,std::vector<std::string> routes){
+void Node::setConnection(Node node){
     
-    con_mat.push_back(connected_nodes);
-    con_mat.push_back(costs);
-    con_mat.push_back(routes);
+    connect_list.push_back(node);
+
+}
+void Node::setCost(float cost){
+    
+    cost_list.push_back(cost);
+
+}
+
+void Node::setRoute(std::string route){
+    
+    route_list.push_back(route);
 
 }
 
 void Node::printout(){
     std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
-    std::cout<<"con_mat"<<std::endl;
-    for(auto &i:con_mat){
+    std::cout<<"connect_list"<<std::endl;
+    for(auto &i:connect_list){
         for (auto &j:i){
             std::cout<<j<<"\t";
         }    
@@ -73,7 +82,7 @@ float Node::getAltitude(){
 
 std::vector<std::vector<std::string>>* Node::getConnection(){
 
-    return &con_mat;
+    return &connect_list;
 }
 
 
