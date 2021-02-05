@@ -34,7 +34,7 @@ void Node::setNode(std::string n,double lat, double lon, float alt){
     altitude=alt;
 }
 
-void Node::setConnection(Node node){
+void Node::setConnection(Node &node){
     
     connect_list.push_back(node);
 
@@ -54,12 +54,6 @@ void Node::setRoute(std::string route){
 void Node::printout(){
     std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
     std::cout<<"connect_list"<<std::endl;
-    for(auto &i:connect_list){
-        for (auto &j:i){
-            std::cout<<j<<"\t";
-        }    
-        std::cout<<std::endl;
-    }
     //std::cout<<"node name: "<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
 }
 
@@ -80,10 +74,11 @@ float Node::getAltitude(){
     return altitude;
 }
 
-std::vector<std::vector<std::string>>* Node::getConnection(){
+std::vector<Node> Node::getConnection(){
 
-    return &connect_list;
+    return connect_list;
 }
+
 
 
 

@@ -12,7 +12,7 @@ class Node{
         Node();
         Node(const Node &);
         void setNode(std::string,double,double,float);
-        void setConnection(Node);
+        void setConnection(Node &);
         void setCost(float);
         void setRoute(std::string);
         void copyNode(const Node &);
@@ -21,15 +21,15 @@ class Node{
         double getLatitude();
         double getLongitude();
         float getAltitude();
-        std::vector<std::vector<std::string>>* getConnection();
+        std::vector<Node> getConnection();
     private:
         std::string name;
         double latitude;
         double longitude;
         float altitude;
         std::vector<Node> connect_list;
-        std::vector<float> cost;
-        std::vector<std::string> routes;
+        std::vector<float> cost_list;
+        std::vector<std::string> route_list;
 };
 
 
