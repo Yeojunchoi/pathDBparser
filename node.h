@@ -43,7 +43,7 @@ struct NodeCosts{
     float F_cost;
     float G_cost;
     float H_cost;
-    std::string parent;
+    Node parent;
 };
 
 #endif

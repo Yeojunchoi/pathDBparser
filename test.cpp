@@ -247,7 +247,7 @@ void check_open_close(std::vector<NodeCosts>openlist ,std::vector<NodeCosts> clo
     std::cout<<std::endl;
     for(auto &current:closedlist)
     {   
-        std::cout<< current.parent<<"   ";
+        std::cout<< current.parent.getName()<<"   ";
     }
     std::cout<<std::endl;
     std::cout<<"remain openlist"<<std::endl;
@@ -284,10 +284,10 @@ void closelist_to_openlist(std::vector<Node> &nodelist, std::vector<NodeCosts> &
             for(int i=0;i<connected_list.size();i++)                                            //for each connection in connected_list cal full cost and designate parent
             {   
                 NodeCosts opentmp;
-                opentmp={set_from_nodelist(nodelist,connected_list[i]),0,connected_cost[i],cal_heuristic_cost(set_from_nodelist(nodelist,connected_list[i]),arrival),closedlist.back().node.getName()};
+                opentmp={set_from_nodelist(nodelist,connected_list[i]),0,connected_cost[i]+closedlist.back().G_cost,cal_heuristic_cost(set_from_nodelist(nodelist,connected_list[i]),arrival),set_from_nodelist(nodelist,closedlist.back().node)};
                 opentmp.F_cost=opentmp.G_cost+opentmp.H_cost;
 
-                std::cout<<"node: "<<opentmp.node.getName()<<"  parent: "<<opentmp.parent<< "  F  G  H  :"<<opentmp.F_cost<<"    "<<opentmp.G_cost<<"    "<<opentmp.H_cost<<std::endl;
+                std::cout<<"node: "<<opentmp.node.getName()<<"  parent: "<<opentmp.parent.getName()<< "  F  G  H  :"<<opentmp.F_cost<<"    "<<opentmp.G_cost<<"    "<<opentmp.H_cost<<std::endl;
                 tmplist.push_back(opentmp);                                                    //create tmplist
             }
 
@@ -308,7 +308,7 @@ void closelist_to_openlist(std::vector<Node> &nodelist, std::vector<NodeCosts> &
            }
 
 
-            for(auto &tmp_cur:tmplist)                                                                //add tmplist to openlist
+            for(auto &tmp_cur:tmplist)                                                                //Check openlist overlap
             {
                 bool same=false;
                 for(auto &open_cur:openlist)
@@ -366,7 +366,8 @@ void cal_min_cost_push(std::vector<NodeCosts>&openlist,std::vector<NodeCosts> &c
 }
 
 int cal_cost(std::vector<Node> &nodelist, std::vector<NodeCosts> &openlist,std::vector<NodeCosts> &closedlist,Node &departure, Node &arrival){
-    NodeCosts tmp={departure,0,0,0,"Start"};
+    Node none;
+    NodeCosts tmp={departure,0,0,0,none};
     closedlist.push_back(tmp);
 
 
@@ -391,7 +392,7 @@ while(1){
 }
 
 
-int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string start, std::string target){
+void a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string start, std::string target){
     bool flag1,flag2 =false;
     Node departure;
     Node arrival;
@@ -416,13 +417,23 @@ int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string
     
 
     cal_cost(nodelist,openlist,closedlist,departure,arrival);
-    
-                                                               //push back departure Node address
-    
-                                                          //Check node name input
 
 
+    for(int closed_cur=closedlist.size()-1;closed_cur>=0;closed_cur--)
+    {
+        path.push_back(closedlist[closed_cur].parent);
+        if(closedlist[closed_cur].parent.getName()==departure.getName()) break;
+    }
 
+    path.insert(path.begin(),arrival);
+    std::reverse(path.begin(),path.end());
+
+    /*
+    for(auto & cur:path){
+       std::cout<< cur.getName()<<"     ";
+    }
+    std::cout<<std::endl;*/
+                                                                
 
 
 }
@@ -433,11 +444,18 @@ int main(){
 
    std::vector<Node> parsedlist;                                                                    //main data pool, do not delete or free                  
    std::vector<Node> resultpath;
+
    parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
 
-   a_star_path(parsedlist,resultpath,"Base","C-3");
+   a_star_path(parsedlist,resultpath,"Base","C-4");
+
+    for(auto & cur:resultpath){
+        std::cout<< cur.getName()<<"     ";
+    }
+    std::cout<<std::endl;
+
     
     
    // cal_cost(parsedlist);
