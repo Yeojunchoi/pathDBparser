@@ -371,39 +371,40 @@ int cal_cost(std::vector<Node> &nodelist, std::vector<NodeCosts> &openlist,std::
     closedlist.push_back(tmp);
 
 
-while(1){
-    if(closedlist.back().node.getName()==arrival.getName())                                  //while last element of closedlist is no target
-    {   
-        std::cout<<"reached to destination!!!"<<std::endl;
-        return 1;
-        break;
-    }
-    else
+    while(1)
     {
-        closelist_to_openlist(nodelist,openlist,closedlist,arrival);
-    }
+        if(closedlist.back().node.getName()==arrival.getName())                                  //while last element of closedlist is no target
+        {   
+            std::cout<<"reached to destination!!!"<<std::endl;
+            return 1;
+            break;
+        }
+        else
+        {
+            closelist_to_openlist(nodelist,openlist,closedlist,arrival);
+        }
 
 
-    cal_min_cost_push(openlist,closedlist);
-    
-    
-    //check_open_close(openlist,closedlist);
+        cal_min_cost_push(openlist,closedlist);
+        
+        
+        //check_open_close(openlist,closedlist);
     }
 }
 
 
-void a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string start, std::string target){
+int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string start, std::string target){
     bool flag1,flag2 =false;
     Node departure;
     Node arrival;
-    std::vector<NodeCosts> openlist;                                                                 //a* start create open and closed list
+    std::vector<NodeCosts> openlist;                                                            //a* start create open and closed list
     std::vector<NodeCosts> closedlist;
    
 
     for(auto &node:nodelist){                                                                   //search all node in nodelist
         if(node.getName()==start){                                                              //if find start node in nodelist
             flag1 =true;                                                                        //indicating found start node
-            //departure.copyNode(node);                                                           //Deep Copy node
+            //departure.copyNode(node);                                                         //Deep Copy node
             departure.copyNode(node);
             std::cout<<"found starting node"<<std::endl;
         }
@@ -414,19 +415,25 @@ void a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::strin
             std::cout<<"found target node"<<std::endl;
         }
     }
-    
+    if(!flag1 || !flag2){return -1;}
 
-    cal_cost(nodelist,openlist,closedlist,departure,arrival);
+                                       
 
-
-    for(int closed_cur=closedlist.size()-1;closed_cur>=0;closed_cur--)
+    if(cal_cost(nodelist,openlist,closedlist,departure,arrival))                               //iterate A* open-close list calculation
     {
-        path.push_back(closedlist[closed_cur].parent);
-        if(closedlist[closed_cur].parent.getName()==departure.getName()) break;
+        for(int closed_cur=closedlist.size()-1;closed_cur>=0;closed_cur--)                      //from closedlist back
+        {
+            path.push_back(closedlist[closed_cur].parent);
+            if(closedlist[closed_cur].parent.getName()==departure.getName()) break;
+        }
+        path.insert(path.begin(),arrival);
+        std::reverse(path.begin(),path.end());
     }
+    else
+    {
 
-    path.insert(path.begin(),arrival);
-    std::reverse(path.begin(),path.end());
+    }
+    
 
     /*
     for(auto & cur:path){
@@ -449,7 +456,7 @@ int main(){
   
    parse_connection_file(parsedlist);
 
-   a_star_path(parsedlist,resultpath,"Base","C-4");
+   a_star_path(parsedlist,resultpath,"Base","B-2");
 
     for(auto & cur:resultpath){
         std::cout<< cur.getName()<<"     ";
