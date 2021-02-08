@@ -7,6 +7,7 @@
 #include <cctype>
 #include <boost/filesystem.hpp>
 #include <cmath>
+#include <limits.h>
 
 #include "node.h"
 
@@ -182,7 +183,7 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
                         break;
                     case 1:                                                                     //second element, cost
                         tmp_cost=static_cast<std::string>(result[i]);
-                        //std::cout<<cost<<"  "; 
+                        //std::cout<<stof(tmp_cost)<<"  "; 
                         break;
 
                     case 2:                                                                     //third element, route
@@ -232,42 +233,161 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
         }
 
       }
+        //node.printout();
+    
     }
 }                                                                                               //parse_connection_file end
 
+void check_open_close(std::vector<NodeCosts>openlist ,std::vector<NodeCosts> closedlist){
+    std::cout<<"closedlist"<<std::endl;
+    for(auto &current:closedlist)
+    {   
+        std::cout<< current.node.getName()<<"   ";
+    }
+    std::cout<<std::endl;
+    for(auto &current:closedlist)
+    {   
+        std::cout<< current.parent<<"   ";
+    }
+    std::cout<<std::endl;
+    std::cout<<"remain openlist"<<std::endl;
+    for(auto &current:openlist)
+    {   
+        std::cout<< current.node.getName()<<"   ";
+    }
+    std::cout<<std::endl;
 
+}
 
 float cal_heuristic_cost(Node now, Node arrival){
     return dist_btw_lla_points(now.getLatitude(),now.getLongitude(),arrival.getLatitude(),arrival.getLongitude())/1000.0;
 }
 
-float cal_cost(std::vector<Node> &openlist, Node arrival){
-    float f,g,h;
-    std::vector<std::string> connectionName;
-    std::vector<float> g_cost;
-    std::vector<float> h_cost;
-    std::vector<float> f_cost;
-    for(auto &current:openlist)
+Node set_from_nodelist(std::vector<Node> &nodelist, Node target){
+    for(auto &cur:nodelist)
     {
-        for (int j = 0; j < 3; j++)
-        {
-            for(auto & k:i.getConnection()->at(j))
-            {
-                if(j==0)
-                {
-                    connectionName.push_back(k);
-                }
-                else if(j==1)
-                {
-                    g_cost.push_back(stof(k));
-                }
+        if(cur.getName()==target.getName()){
+            return cur;
+        }
+    }
+}
+
+void closelist_to_openlist(std::vector<Node> &nodelist, std::vector<NodeCosts> &openlist,std::vector<NodeCosts> &closedlist,Node & arrival){
+
+
+            std::vector<Node> connected_list    =closedlist.back().node.getConnection();           //set 3 vector contain current node's connection information
+            std::vector<float> connected_cost   =closedlist.back().node.getConnectionCost();
+            std::vector<NodeCosts> tmplist;
+
+            std::cout<<"connected node information about  :"<<closedlist.back().node.getName()<<std::endl;
+
+            for(int i=0;i<connected_list.size();i++)                                            //for each connection in connected_list cal full cost and designate parent
+            {   
+                NodeCosts opentmp;
+                opentmp={set_from_nodelist(nodelist,connected_list[i]),0,connected_cost[i],cal_heuristic_cost(set_from_nodelist(nodelist,connected_list[i]),arrival),closedlist.back().node.getName()};
+                opentmp.F_cost=opentmp.G_cost+opentmp.H_cost;
+
+                std::cout<<"node: "<<opentmp.node.getName()<<"  parent: "<<opentmp.parent<< "  F  G  H  :"<<opentmp.F_cost<<"    "<<opentmp.G_cost<<"    "<<opentmp.H_cost<<std::endl;
+                tmplist.push_back(opentmp);                                                    //create tmplist
             }
-        }    
+
+           if(closedlist.size()!=1)                                                             //pass parent check at initial openlist set
+           { 
+                for(int i=0;i<tmplist.size();i++)                                                   //parent check for each element in tmplist
+                {
+                    for(auto &close_cur:closedlist)                                                 
+                    {
+                        if(tmplist[i].node.getName()==close_cur.node.getName())                             //if closed list name matches to tmplist element name
+                        {
+                            std::cout<<"this node "<<tmplist[i].node.getName()<<" already placed in closed list, delete"<<std::endl;
+                            tmplist.erase(tmplist.begin()+i);                                       //erase that tmplist element, because it's just reverse route
+                        }
+                        
+                    }
+                }
+           }
 
 
+            for(auto &tmp_cur:tmplist)                                                                //add tmplist to openlist
+            {
+                bool same=false;
+                for(auto &open_cur:openlist)
+                {
+                    if(open_cur.node.getName()==tmp_cur.node.getName() && open_cur.F_cost>tmp_cur.F_cost)
+                    {
+                        std::cout<<"renewing Already exist node on openlist: "<<open_cur.node.getName()
+                                 <<"   "<<open_cur.F_cost<<"  ->  "<<tmp_cur.F_cost <<std::endl;
+                        open_cur.F_cost=tmp_cur.F_cost;
+                        open_cur.G_cost=tmp_cur.G_cost;
+                        open_cur.H_cost=tmp_cur.H_cost;
+                        open_cur.parent=tmp_cur.parent;
+                        
+                        same=true;
+                    }
+                }   
+                if(!same){openlist.push_back(tmp_cur);}
+            }
+            
+        
+}
+
+void cal_min_cost_push(std::vector<NodeCosts>&openlist,std::vector<NodeCosts> &closedlist){
+    
+    std::vector<float> costs;
+    
+    for(auto &open_cur:openlist)
+    {   
+        costs.push_back(open_cur.F_cost);
+    }
+    
+    float minimum=costs[0];
+    int min_index=0;
+    NodeCosts min_node;
+    for (int i = 0; i < costs.size(); ++i)
+    {
+        if(minimum!=std::min(minimum,costs[i]))
+        {
+            minimum = std::min(minimum, costs[i]);
+            min_index=i;
+        }
     }
 
-   
+    std::cout<<"open close before erase lowest"<<std::endl;
+    check_open_close(openlist,closedlist);
+    
+
+    closedlist.push_back(openlist[min_index]);
+    
+    openlist.erase(openlist.begin()+min_index);
+    
+
+    std::cout<<"open close after erase lowest"<<std::endl;
+    check_open_close(openlist,closedlist);
+}
+
+int cal_cost(std::vector<Node> &nodelist, std::vector<NodeCosts> &openlist,std::vector<NodeCosts> &closedlist,Node &departure, Node &arrival){
+    NodeCosts tmp={departure,0,0,0,"Start"};
+    closedlist.push_back(tmp);
+
+
+while(1){
+    if(closedlist.back().node.getName()==arrival.getName())                                  //while last element of closedlist is no target
+    {   
+        std::cout<<"reached to destination!!!"<<std::endl;
+        return 1;
+        break;
+    }
+    else
+    {
+        closelist_to_openlist(nodelist,openlist,closedlist,arrival);
+    }
+
+
+    cal_min_cost_push(openlist,closedlist);
+    
+    
+    //check_open_close(openlist,closedlist);
+    }
 }
 
 
@@ -275,26 +395,29 @@ int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string
     bool flag1,flag2 =false;
     Node departure;
     Node arrival;
-    std::vector<Node> openlist;                                                                 //a* start create open and closed list
-    std::vector<Node> closedlist;
-    
+    std::vector<NodeCosts> openlist;                                                                 //a* start create open and closed list
+    std::vector<NodeCosts> closedlist;
+   
+
     for(auto &node:nodelist){                                                                   //search all node in nodelist
         if(node.getName()==start){                                                              //if find start node in nodelist
             flag1 =true;                                                                        //indicating found start node
             //departure.copyNode(node);                                                           //Deep Copy node
-            departure=node;
+            departure.copyNode(node);
             std::cout<<"found starting node"<<std::endl;
         }
         else if(node.getName()==target){                                                        //if found target node in nodelist
             flag2 =true;                                                                        //indicating found target node
             //arrival.copyNode(node);
-            arrival=node;                                                             //Deep Copy
+            arrival.copyNode(node);                                                                      //Deep Copy
             std::cout<<"found target node"<<std::endl;
         }
     }
     
+
+    cal_cost(nodelist,openlist,closedlist,departure,arrival);
     
-    closedlist.push_back(departure);                                                            //push back departure Node address
+                                                               //push back departure Node address
     
                                                           //Check node name input
 
@@ -313,8 +436,10 @@ int main(){
    parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
-    
 
+   a_star_path(parsedlist,resultpath,"Base","C-3");
+    
+    
    // cal_cost(parsedlist);
     //std::cout<<dist_btw_points(37.222222,127.222222,37.222223,127.2222223);    
     

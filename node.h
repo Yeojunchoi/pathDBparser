@@ -7,6 +7,10 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
+
+
+
+
 class Node{
     public:
         Node();
@@ -22,6 +26,8 @@ class Node{
         double getLongitude();
         float getAltitude();
         std::vector<Node> getConnection();
+        std::vector<float> getConnectionCost();
+        std::vector<std::string> getConnectionRoute();
     private:
         std::string name;
         double latitude;
@@ -32,5 +38,12 @@ class Node{
         std::vector<std::string> route_list;
 };
 
+struct NodeCosts{
+    Node node;
+    float F_cost;
+    float G_cost;
+    float H_cost;
+    std::string parent;
+};
 
 #endif

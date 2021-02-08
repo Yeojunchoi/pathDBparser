@@ -16,6 +16,8 @@ Node::Node(const Node &copyfrom){
     longitude=copyfrom.longitude;
     altitude=copyfrom.altitude;
     connect_list=copyfrom.connect_list;
+    cost_list=copyfrom.cost_list;
+    route_list=copyfrom.route_list;
     
 }
 
@@ -25,6 +27,8 @@ void Node::copyNode(const Node &copyfrom){
     longitude=copyfrom.longitude;
     altitude=copyfrom.altitude;
     connect_list=copyfrom.connect_list;
+    cost_list=copyfrom.cost_list;
+    route_list=copyfrom.route_list;
 }
 
 void Node::setNode(std::string n,double lat, double lon, float alt){
@@ -54,6 +58,21 @@ void Node::setRoute(std::string route){
 void Node::printout(){
     std::cout<<"node name: "<< name<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
     std::cout<<"connect_list"<<std::endl;
+    for(auto &i:connect_list)
+    {
+        std::cout<<i.getName()<<" ";
+    }
+    std::cout<<std::endl;
+    for(auto &i:cost_list)
+    {
+        std::cout<<i<<" ";
+    }
+    std::cout<<std::endl;
+    for(auto &i:route_list)
+    {
+        std::cout<<i<<" ";
+    }
+    std::cout<<std::endl;
     //std::cout<<"node name: "<<"  lla:  "<<latitude<<" "<<longitude<<"  "<<altitude<<std::endl;
 }
 
@@ -77,6 +96,14 @@ float Node::getAltitude(){
 std::vector<Node> Node::getConnection(){
 
     return connect_list;
+}
+
+std::vector<float> Node::getConnectionCost(){
+    return cost_list;
+}
+
+std::vector<std::string> Node::getConnectionRoute(){
+    return route_list;
 }
 
 
