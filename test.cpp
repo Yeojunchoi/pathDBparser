@@ -39,17 +39,29 @@ double dist_btw_lla_points(double lat_origin,double lon_origin, double lat_far,d
     return d;
 }
 
+std::vector<std::string> tokenize_getline(const std::string& data, const char delimiter = '/') {
+	std::vector<std::string> result;
+	std::string token;
+	std::stringstream ss(data);
+
+	while (getline(ss, token, delimiter)) {
+		result.push_back(token);
+	}
+	return result;
+}
 
 std::vector<std::string> tokenize_operator(const std::string& data) {
         std::vector<std::string> result;
         std::string token;
         std::stringstream ss(data);
 
+        
         while (ss >> token) {
             result.push_back(token);
         }
+        
         return result;
-    }
+}
 
 std::vector<Node> parse_node_file(std::string nodefile,std::vector<Node> &nodelist){
         std::ifstream in(nodefile);
@@ -241,25 +253,74 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
 void parse_route_file(std::vector<Node> &nodelist)                                         //send nodelist reference
 {
   namespace fs=boost::filesystem;                                                               //using boost filesystem
-  std::vector<fs::path> files;                                                                  //creating path object
+  std::vector<fs::path> folders;                                                                  //creating path object
   fs::path folder=fs::current_path();                                                           //find current path
   fs::path p=folder.generic_string()+"/route";                                             //designate connection folder to current path
   fs::directory_iterator it{p};                                                                 //boost create folder iterater object
 
-  // connection file example(A-1.txt) 
-  
-  // #	Connected to	cost	route
-  //	Base		0.422	base-a1`	
-  //  	A-4		    0.168	a1-a4
-
   while (it != fs::directory_iterator{})                                                        //while iteration end
   {
-      if(it->status().type()==fs::regular_file){                                                //if find regular file, add to files vector
-          files.push_back(it->path());
+      if(it->status().type()==fs::directory_file){                                                //if find regular file, add to files vector
+          folders.push_back(it->path());          
       }
       it++;                                                                                     //to next iteration
   }
 
+  for(int i=0; i<folders.size();i++){
+    std::vector<fs::path> files;
+    //files.push_back(tokenize_getline(folders[i].generic_string()).back());
+    fs::directory_iterator iter{folders[i].generic_string()};
+    //std::cout<<folders[i].generic_string()<<std::endl;
+   
+    while (iter != fs::directory_iterator{})                                                        //while iteration end
+    {
+        if(iter->status().type()==fs::regular_file){                                                //if find regular file, add to files vector
+            files.push_back(iter->path());          
+        }
+        iter++;                                                                                     //to next iteration
+    }
+    
+    for (auto & node :nodelist)                                                                   //for each node in nodelist
+    {
+    
+        for(auto& file: files)                                                                      //for each file in connection folder
+        {
+        
+            if(file.stem()==node.getName())                                                           //if filename matches to nodename
+            {   
+                std::ifstream routefile(file.generic_string()); 
+                std::string tmp_connected,tmp_cost,tmp_route;   
+                char buf[100];
+                std::string bufconvert;
+                ///write routefile parse code below here
+                
+                while(routefile)                                                                    //while file is open , until eof()
+                {
+                    routefile.getline(buf,100);  
+                    std::cout<<buf<<std::endl;
+                } 
+
+
+            }
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+    
+
+  }
+
+
+
+/*
   for (auto & node :nodelist)                                                                   //for each node in nodelist
   {
     
@@ -328,7 +389,7 @@ void parse_route_file(std::vector<Node> &nodelist)                              
 
             }
             //############ DEBUGCODE ###########################
-            /*
+            
             std::cout<<"connection nodes: ";
             for(auto & i :connected_nodes){
                     std::cout<<i<<"  ";
@@ -346,15 +407,15 @@ void parse_route_file(std::vector<Node> &nodelist)                              
                 std::cout<<i<<"  ";   
             }
             std::cout<<std::endl;
-            */
+            
             
             //node.setConnection(connected_nodes,costs,routes);
         }
 
       }
         //node.printout();
-    
-    }
+
+    }*/
 }                             
 
 void check_open_close(std::vector<NodeCosts>openlist ,std::vector<NodeCosts> closedlist){
@@ -575,13 +636,17 @@ int main(){
   
    parse_connection_file(parsedlist);
 
+   parse_route_file(parsedlist);
+
    a_star_path(parsedlist,resultpath,"Base","B-2");
 
+
+    
     for(auto & cur:resultpath){
         std::cout<< cur.getName()<<"     ";
     }
     std::cout<<std::endl;
-
+    
     
     
    // cal_cost(parsedlist);
