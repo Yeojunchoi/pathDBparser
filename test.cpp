@@ -236,7 +236,126 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
         //node.printout();
     
     }
-}                                                                                               //parse_connection_file end
+}                                                                                             //parse_connection_file end
+
+void parse_route_file(std::vector<Node> &nodelist)                                         //send nodelist reference
+{
+  namespace fs=boost::filesystem;                                                               //using boost filesystem
+  std::vector<fs::path> files;                                                                  //creating path object
+  fs::path folder=fs::current_path();                                                           //find current path
+  fs::path p=folder.generic_string()+"/route";                                             //designate connection folder to current path
+  fs::directory_iterator it{p};                                                                 //boost create folder iterater object
+
+  // connection file example(A-1.txt) 
+  
+  // #	Connected to	cost	route
+  //	Base		0.422	base-a1`	
+  //  	A-4		    0.168	a1-a4
+
+  while (it != fs::directory_iterator{})                                                        //while iteration end
+  {
+      if(it->status().type()==fs::regular_file){                                                //if find regular file, add to files vector
+          files.push_back(it->path());
+      }
+      it++;                                                                                     //to next iteration
+  }
+
+  for (auto & node :nodelist)                                                                   //for each node in nodelist
+  {
+    
+    for(auto& file: files)                                                                      //for each file in connection folder
+    {
+     
+      if(file.stem()==node.getName())                                                           //if filename matches to nodename
+      {     
+
+            std::ifstream cnectfile(file.generic_string());                                     //ifstream, open exact file
+            std::string tmp_connected,tmp_cost,tmp_route;                                                 //create temporary variable
+            char buf[100];
+            std::string bufconvert;
+            
+            if (!cnectfile.is_open())                                                           //  if cannot open file
+            {
+                std::cout << "파일을 찾을 수 없습니다! check file name" << std::endl;
+            }
+
+            while(cnectfile)                                                                    //while file is open , until eof()
+            {
+                cnectfile.getline(buf,100);                                                     //write one line to buffer
+                bufconvert=static_cast<std::string>(buf);                                       //change char -> string for later use
+               
+                if(bufconvert.length()==0){break;}                                              //detects blank line, break
+                
+                if(cnectfile.eof()==true){break;}                                               //detects eof(), break
+
+                std::vector<std::string> result=tokenize_operator(buf);                         //tokenize line
+
+                if(result[0]=="#"){std::cout<<"pass index row"<<std::endl; continue;}           //pass first index line
+
+                for (int i = 0; i < result.size(); i++)                                         // for each element in one line
+                {                                 
+                    switch (i)
+                    {
+                    case 0:                                                                     //first element, node name
+                        tmp_connected =static_cast<std::string>(result[i]);                   
+                        //std::cout<<"parsing elements "<< connected<<"  ";
+                        break;
+                    case 1:                                                                     //second element, cost
+                        tmp_cost=static_cast<std::string>(result[i]);
+                        //std::cout<<stof(tmp_cost)<<"  "; 
+                        break;
+
+                    case 2:                                                                     //third element, route
+                        tmp_route =static_cast<std::string>(result[i]);
+                        //std::cout<<route<<std::endl; 
+                        break;
+
+                    default:                                                                    //exception, wrong element
+                        std::cout<<"unexpected coulumn input"<<std::endl;
+                        break;
+                    }
+                }
+
+                for(auto & current:nodelist)                                                    //searching for all node in nodelist
+                {
+                    if(tmp_connected==current.getName())                                        //if nodename matches with tmp_connected
+                    {   
+                        node.setConnection(current);                                            //insert current node to connection_list of mother node 
+                        node.setCost(stof(tmp_cost));                                           //insert cost
+                        node.setRoute(tmp_route);                                               //insert route
+                    }
+                }
+
+            }
+            //############ DEBUGCODE ###########################
+            /*
+            std::cout<<"connection nodes: ";
+            for(auto & i :connected_nodes){
+                    std::cout<<i<<"  ";
+                }
+            std::cout<<std::endl;
+            
+            std::cout<<"costs:  ";
+            for(auto & i :costs){
+                std::cout<<i<<"  ";   
+            }
+            std::cout<<std::endl;
+            
+            std::cout<<"routes:  ";
+            for(auto & i :routes){
+                std::cout<<i<<"  ";   
+            }
+            std::cout<<std::endl;
+            */
+            
+            //node.setConnection(connected_nodes,costs,routes);
+        }
+
+      }
+        //node.printout();
+    
+    }
+}                             
 
 void check_open_close(std::vector<NodeCosts>openlist ,std::vector<NodeCosts> closedlist){
     std::cout<<"closedlist"<<std::endl;
