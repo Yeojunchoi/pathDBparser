@@ -35,6 +35,7 @@ class Route{
     private:
         Node node1;
         Node node2;
+        std::vector<Waypoint> route;
 
 
 }

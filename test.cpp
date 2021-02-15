@@ -10,6 +10,7 @@
 #include <limits.h>
 
 #include "node.h"
+#include "rapidjson/document.h"
 
 #define pi 3.14159265358979323846
 //#include "tools.h"
@@ -290,14 +291,30 @@ void parse_route_file(std::vector<Node> &nodelist)                              
             {   
                 std::ifstream routefile(file.generic_string()); 
                 std::string tmp_connected,tmp_cost,tmp_route;   
-                char buf[100];
+                char buf[65536];
                 std::string bufconvert;
                 ///write routefile parse code below here
                 
                 while(routefile)                                                                    //while file is open , until eof()
-                {
-                    routefile.getline(buf,100);  
-                    std::cout<<buf<<std::endl;
+                {   
+                    using namespace rapidjson;
+                    if(routefile.eof()){break;}
+                    routefile.read(buf,65536);
+                     
+                    Document route;
+                    route.Parse(buf);
+                    //std::cout<<buf<<std::endl;
+                    const Value& mission = route["mission"];
+                    if(mission.IsObject()){std::cout<<"end of route file"<<std::endl;}
+                    const Value& items = mission["items"];
+                    for(int i=0; i<items.Size();i++){
+                       const Value& waypoint=items[i];
+                       if(waypoint["AMSLAltAboveTerrain"].IsDouble()){
+                               std::cout<<"ASML double!!"<<std::endl;
+                       }
+                    }
+                    //printf("%d ", itr->GetInt());
+
                 } 
 
 
