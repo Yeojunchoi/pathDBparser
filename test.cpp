@@ -11,6 +11,8 @@
 
 #include "node.h"
 #include "rapidjson/document.h"
+#include "route.h"
+
 
 #define pi 3.14159265358979323846
 //#include "tools.h"
@@ -249,91 +251,125 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
         //node.printout();
     
     }
-}                                                                                             //parse_connection_file end
+}                                                                                            
 
-void parse_route_file(std::vector<Node> &nodelist)                                         //send nodelist reference
+void parse_route_file(std::vector<Node> &nodelist,std::vector<Route> &routelist)                                        
 {
-  namespace fs=boost::filesystem;                                                               //using boost filesystem
-  std::vector<fs::path> folders;                                                                  //creating path object
-  fs::path folder=fs::current_path();                                                           //find current path
-  fs::path p=folder.generic_string()+"/route";                                             //designate connection folder to current path
-  fs::directory_iterator it{p};                                                                 //boost create folder iterater object
+  namespace fs=boost::filesystem;                                                             
+  std::vector<fs::path> folders;
+  
+                                                              
+  fs::path folder=fs::current_path();                                                          
+  fs::path p=folder.generic_string()+"/route";                                            
+  fs::directory_iterator it{p};                                                                 
 
-  while (it != fs::directory_iterator{})                                                        //while iteration end
+  while (it != fs::directory_iterator{})                                        //collect route directory path                    
   {
-      if(it->status().type()==fs::directory_file){                                                //if find regular file, add to files vector
+      if(it->status().type()==fs::directory_file){                              //if find directory, push back to folder list                               
           folders.push_back(it->path());          
       }
-      it++;                                                                                     //to next iteration
+      it++;                                                                                    
   }
 
-  for(int i=0; i<folders.size();i++){
+  for(int i=0; i<folders.size();i++){                                           //iterate each directory
     std::vector<fs::path> files;
+    
+    Node start_tmp, end_tmp;
     //files.push_back(tokenize_getline(folders[i].generic_string()).back());
     fs::directory_iterator iter{folders[i].generic_string()};
     //std::cout<<folders[i].generic_string()<<std::endl;
-   
-    while (iter != fs::directory_iterator{})                                                        //while iteration end
+ 
+    for(auto & node:nodelist)
     {
-        if(iter->status().type()==fs::regular_file){                                                //if find regular file, add to files vector
-            files.push_back(iter->path());          
-        }
-        iter++;                                                                                     //to next iteration
-    }
-    
-    for (auto & node :nodelist)                                                                   //for each node in nodelist
-    {
-    
-        for(auto& file: files)                                                                      //for each file in connection folder
+        if(node.getName()==folders[i].stem().generic_string())
         {
-        
-            if(file.stem()==node.getName())                                                           //if filename matches to nodename
+            start_tmp.copyNode(node);                                           //search nodelist for start node
+        }
+    }
+
+    
+    while (iter != fs::directory_iterator{})                                    //iterate in mother node folder                                  
+    {
+        if(iter->status().type()==fs::regular_file){                                                
+            files.push_back(iter->path());                                      //mother node file list
+        }
+        iter++;                                                                                   
+    }
+
+    for (auto& file: files)                                                                
+    {   
+        for(auto & node :nodelist)                                                                      
+        {      
+            if(file.stem()==node.getName())                                                          
             {   
+                Route route;
+                end_tmp.copyNode(node);
+                route.setStartEnd(start_tmp,end_tmp);                           //set route start-end
+                
+                std::cout<<"In searching for mother node:  "<<
+                folders[i].stem()<<"Found exact Node   " <<
+                "File: "<<file.stem()<<"  Node: "<<node.getName()<<std::endl;
+                
+                
                 std::ifstream routefile(file.generic_string()); 
                 std::string tmp_connected,tmp_cost,tmp_route;   
-                char buf[65536];
-                std::string bufconvert;
-                ///write routefile parse code below here
                 
-                while(routefile)                                                                    //while file is open , until eof()
+                std::string bufconvert;
+
+
+                while(routefile)                                                                   
                 {   
                     using namespace rapidjson;
-                    if(routefile.eof()){break;}
+                    char buf[65536]={};
+                    Waypoint wp_tmp;
                     routefile.read(buf,65536);
-                     
-                    Document route;
-                    route.Parse(buf);
                     //std::cout<<buf<<std::endl;
-                    const Value& mission = route["mission"];
-                    if(mission.IsObject()){std::cout<<"end of route file"<<std::endl;}
+                    Document routebuf;
+                    routebuf.Parse(buf);
+                    //std::cout<<buf<<std::endl;
+                    const Value& mission = routebuf["mission"];
+                    //if(mission.IsObject()){std::cout<<"end of route file"<<std::endl;}
+                
                     const Value& items = mission["items"];
+                    
                     for(int i=0; i<items.Size();i++){
-                       const Value& waypoint=items[i];
-                       if(waypoint["AMSLAltAboveTerrain"].IsDouble()){
-                               std::cout<<"ASML double!!"<<std::endl;
-                       }
+                        
+                        const Value& waypoint=items[i];
+                        const Value& param=waypoint["params"];
+
+                        wp_tmp.param1=param[0].GetFloat();
+                        wp_tmp.param2=param[1].GetFloat();
+                        wp_tmp.param3=param[2].GetFloat();
+                        wp_tmp.param4=NAN;
+                        wp_tmp.Lat_x=param[4].GetDouble();
+                        wp_tmp.Lon_y=param[5].GetDouble();
+                        wp_tmp.Alt_z=param[6].GetDouble();
+                        wp_tmp.autocontinue=true;
+                        wp_tmp.is_current=false;
+                        wp_tmp.frame=0;
+                        wp_tmp.command=16;
+                        route.pushbackWP(wp_tmp);
+                    
                     }
                     //printf("%d ", itr->GetInt());
 
                 } 
-
+                routelist.push_back(route);
+                
 
             }
 
-
-
-        }
-
-
+        }      
 
     }
+    
+}
 
 
 
 
     
 
-  }
 
 
 
@@ -642,21 +678,37 @@ int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string
 
 }
 
+void waypoint_assembly(std::vector<Node> &resultpath, std::vector<Route> &routelist){
+    Node start_tmp, end_tmp;
+    start_tmp=resultpath.front();
+    end_tmp=resultpath.back();
+    
+    // check first element of resultpath
+    // check last element of resultpath
+    // find route has both element
 
+    
+
+
+}
 
 int main(){
 
    std::vector<Node> parsedlist;                                                                    //main data pool, do not delete or free                  
    std::vector<Node> resultpath;
+   std::vector<Route> routelist;
 
    parse_node_file("node.txt",parsedlist);
   
    parse_connection_file(parsedlist);
 
-   parse_route_file(parsedlist);
+   parse_route_file(parsedlist,routelist);
 
    a_star_path(parsedlist,resultpath,"Base","B-2");
 
+   for(auto& cur: routelist){
+       cur.printOut();
+   }
 
     
     for(auto & cur:resultpath){

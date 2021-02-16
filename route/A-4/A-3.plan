@@ -14,7 +14,7 @@
         "hoverSpeed": 20,
         "items": [
             {
-                "AMSLAltAboveTerrain": 86,
+                "AMSLAltAboveTerrain": null,
                 "Altitude": 15,
                 "AltitudeMode": 3,
                 "autoContinue": true,

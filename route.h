@@ -9,36 +9,41 @@
 #include "node.h"
 
 struct Waypoint{
-    double  Lat;
-    double  Lon;
-    float   Alt;
-    float   param1;
-    float   param2;
-    float   param3;
-    float   param4;
-    int     command;
-    int     doJumpId;
-    int     AltMode;
-    bool    autocontinue;
-    int     frame;
+    float       param1;
+    float       param2;
+    float       param3;
+    float       param4;
+    double      Lat_x;
+    double      Lon_y;
+    double      Alt_z;
+    uint16_t    command;
+    bool        is_current;
+    bool        autocontinue;
+    uint8_t     frame;
 };
 
 
 class Route{
     public:
-
-
+        Route();
+        void setStartEnd(Node &,Node &);
+        void pushbackWP(Waypoint);
+        Node* startnode();
+        Node* endnode();
+        bool* checkUproute();
+        void printOut();
 
 
 
 
     private:
-        Node node1;
-        Node node2;
-        std::vector<Waypoint> route;
+        Node start;
+        Node end;
+        bool uproute;
+        std::vector<Waypoint> waypoints;
 
 
-}
+};
 
 
 
