@@ -678,11 +678,54 @@ int a_star_path(std::vector<Node> &nodelist,std::vector<Node> &path, std::string
 
 }
 
-void waypoint_assembly(std::vector<Node> &resultpath, std::vector<Route> &routelist){
-    Node start_tmp, end_tmp;
-    start_tmp=resultpath.front();
-    end_tmp=resultpath.back();
-    
+
+
+Route search_route(std::vector<Route> &routelist,Node &start,Node &end){
+    std::vector<Route> searchlist1;
+
+        for(auto & cur:routelist){
+            if(cur.startnode()->getName()==start.getName()){
+                searchlist1.push_back(cur);
+            }
+        }
+
+    std::vector<Route> searchlist2;
+        for(auto & curr:searchlist1){
+            if(curr.endnode()->getName()==end.getName()){
+                searchlist2.push_back(curr);
+                //std::cout<<"search1 node: "<<curr.endnode()->getName()<<"search2 node: "<<end.getName()<<std::endl;
+            }
+        }
+
+        if(searchlist2.size()!=1){
+            std::cout<<"start-end seach ended in multi path"<<std::endl;
+        }
+        
+        return searchlist2[0];
+
+}
+
+
+std::vector<Route> waypoint_assembly(std::vector<Node> &resultpath, std::vector<Route> &routelist){
+    std::vector<Route> route_final;
+
+    for(int i=0;i<resultpath.size()-1;i++){
+        Node start_tmp, end_tmp;
+        start_tmp=resultpath[i];
+        end_tmp=resultpath[i+1];
+          
+        std::cout<<"searching for start:  "<<start_tmp.getName()<<"  end:  "<<end_tmp.getName()<<std::endl;
+        Route tmproute = search_route(routelist,start_tmp,end_tmp);
+        route_final.push_back(tmproute);
+    }
+
+   // for(auto & cur:route_final){
+   //     cur.printOut();
+   // }
+
+}
+
+
     // check first element of resultpath
     // check last element of resultpath
     // find route has both element
@@ -690,13 +733,14 @@ void waypoint_assembly(std::vector<Node> &resultpath, std::vector<Route> &routel
     
 
 
-}
+
 
 int main(){
 
    std::vector<Node> parsedlist;                                                                    //main data pool, do not delete or free                  
    std::vector<Node> resultpath;
    std::vector<Route> routelist;
+   std::vector<Route> resultroute;
 
    parse_node_file("node.txt",parsedlist);
   
@@ -704,17 +748,20 @@ int main(){
 
    parse_route_file(parsedlist,routelist);
 
-   a_star_path(parsedlist,resultpath,"Base","B-2");
+   a_star_path(parsedlist,resultpath,"Base","C-1");
 
-   for(auto& cur: routelist){
-       cur.printOut();
-   }
 
     
     for(auto & cur:resultpath){
         std::cout<< cur.getName()<<"     ";
     }
     std::cout<<std::endl;
+
+
+    resultroute=waypoint_assembly(resultpath,routelist);
+
+    
+    
     
     
     
