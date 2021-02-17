@@ -6,8 +6,8 @@
                 "${workspaceFolder}/**",
                 "${HOME}/pathDB**",
                 "/usr/include",
-                "/usr/lib"
-
+                "/usr/lib",
+                "/opt/ros/melodic/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

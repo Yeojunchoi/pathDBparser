@@ -9,14 +9,32 @@
 #include <cmath>
 #include <limits.h>
 
+#include <ros/ros.h>
+#include <mavros_msgs/WaypointPush.h>
+#include <mavros_msgs/HomePosition.h>
+#include <mavros_msgs/WaypointClear.h>
+#include <mavros_msgs/Waypoint.h>
+#include <mavros_msgs/CommandHome.h>
+
+
+
 #include "node.h"
 #include "rapidjson/document.h"
 #include "route.h"
 
 
+
 #define pi 3.14159265358979323846
 //#include "tools.h"
 //#include "graph.h"
+
+
+
+
+mavros_msgs::HomePosition hp;
+
+
+
 
 double deg2rad(double deg) {
 return (deg * pi / 180);
@@ -271,205 +289,103 @@ void parse_route_file(std::vector<Node> &nodelist,std::vector<Route> &routelist)
       it++;                                                                                    
   }
 
-  for(int i=0; i<folders.size();i++){                                           //iterate each directory
-    std::vector<fs::path> files;
+  for(int i=0; i<folders.size();i++)
+  {                                           //iterate each directory
+        std::vector<fs::path> files;
+        
+        Node start_tmp, end_tmp;
+        //files.push_back(tokenize_getline(folders[i].generic_string()).back());
+        fs::directory_iterator iter{folders[i].generic_string()};
+        //std::cout<<folders[i].generic_string()<<std::endl;
     
-    Node start_tmp, end_tmp;
-    //files.push_back(tokenize_getline(folders[i].generic_string()).back());
-    fs::directory_iterator iter{folders[i].generic_string()};
-    //std::cout<<folders[i].generic_string()<<std::endl;
- 
-    for(auto & node:nodelist)
-    {
-        if(node.getName()==folders[i].stem().generic_string())
+        for(auto & node:nodelist)
         {
-            start_tmp.copyNode(node);                                           //search nodelist for start node
+            if(node.getName()==folders[i].stem().generic_string())
+            {
+                start_tmp.copyNode(node);                                           //search nodelist for start node
+            }
         }
-    }
 
-    
-    while (iter != fs::directory_iterator{})                                    //iterate in mother node folder                                  
-    {
-        if(iter->status().type()==fs::regular_file){                                                
-            files.push_back(iter->path());                                      //mother node file list
+        
+        while (iter != fs::directory_iterator{})                                    //iterate in mother node folder                                  
+        {
+            if(iter->status().type()==fs::regular_file)
+            {                                                
+                files.push_back(iter->path());                                      //mother node file list
+            }
+            iter++;                                                                                   
         }
-        iter++;                                                                                   
-    }
 
-    for (auto& file: files)                                                                
-    {   
-        for(auto & node :nodelist)                                                                      
-        {      
-            if(file.stem()==node.getName())                                                          
-            {   
-                Route route;
-                end_tmp.copyNode(node);
-                route.setStartEnd(start_tmp,end_tmp);                           //set route start-end
-                
-                std::cout<<"In searching for mother node:  "<<
-                folders[i].stem()<<"Found exact Node   " <<
-                "File: "<<file.stem()<<"  Node: "<<node.getName()<<std::endl;
-                
-                
-                std::ifstream routefile(file.generic_string()); 
-                std::string tmp_connected,tmp_cost,tmp_route;   
-                
-                std::string bufconvert;
-
-
-                while(routefile)                                                                   
+        for (auto& file: files)                                                                
+        {   
+            for(auto & node :nodelist)                                                                      
+            {      
+                if(file.stem()==node.getName())                                                          
                 {   
-                    using namespace rapidjson;
-                    char buf[65536]={};
-                    Waypoint wp_tmp;
-                    routefile.read(buf,65536);
-                    //std::cout<<buf<<std::endl;
-                    Document routebuf;
-                    routebuf.Parse(buf);
-                    //std::cout<<buf<<std::endl;
-                    const Value& mission = routebuf["mission"];
-                    //if(mission.IsObject()){std::cout<<"end of route file"<<std::endl;}
-                
-                    const Value& items = mission["items"];
+                    Route route;
+                    end_tmp.copyNode(node);
+                    route.setStartEnd(start_tmp,end_tmp);                           //set route start-end
                     
-                    for(int i=0; i<items.Size();i++){
-                        
-                        const Value& waypoint=items[i];
-                        const Value& param=waypoint["params"];
-
-                        wp_tmp.param1=param[0].GetFloat();
-                        wp_tmp.param2=param[1].GetFloat();
-                        wp_tmp.param3=param[2].GetFloat();
-                        wp_tmp.param4=NAN;
-                        wp_tmp.Lat_x=param[4].GetDouble();
-                        wp_tmp.Lon_y=param[5].GetDouble();
-                        wp_tmp.Alt_z=param[6].GetDouble();
-                        wp_tmp.autocontinue=true;
-                        wp_tmp.is_current=false;
-                        wp_tmp.frame=0;
-                        wp_tmp.command=16;
-                        route.pushbackWP(wp_tmp);
+                    std::cout<<"In searching for mother node:  "<<
+                    folders[i].stem()<<"Found exact Node   " <<
+                    "File: "<<file.stem()<<"  Node: "<<node.getName()<<std::endl;
                     
-                    }
-                    //printf("%d ", itr->GetInt());
-
-                } 
-                routelist.push_back(route);
-                
-
-            }
-
-        }      
-
-    }
-    
-}
+                    
+                    std::ifstream routefile(file.generic_string()); 
+                    std::string tmp_connected,tmp_cost,tmp_route;   
+                    
+                    std::string bufconvert;
 
 
-
-
-    
-
-
-
-
-/*
-  for (auto & node :nodelist)                                                                   //for each node in nodelist
-  {
-    
-    for(auto& file: files)                                                                      //for each file in connection folder
-    {
-     
-      if(file.stem()==node.getName())                                                           //if filename matches to nodename
-      {     
-
-            std::ifstream cnectfile(file.generic_string());                                     //ifstream, open exact file
-            std::string tmp_connected,tmp_cost,tmp_route;                                                 //create temporary variable
-            char buf[100];
-            std::string bufconvert;
-            
-            if (!cnectfile.is_open())                                                           //  if cannot open file
-            {
-                std::cout << "파일을 찾을 수 없습니다! check file name" << std::endl;
-            }
-
-            while(cnectfile)                                                                    //while file is open , until eof()
-            {
-                cnectfile.getline(buf,100);                                                     //write one line to buffer
-                bufconvert=static_cast<std::string>(buf);                                       //change char -> string for later use
-               
-                if(bufconvert.length()==0){break;}                                              //detects blank line, break
-                
-                if(cnectfile.eof()==true){break;}                                               //detects eof(), break
-
-                std::vector<std::string> result=tokenize_operator(buf);                         //tokenize line
-
-                if(result[0]=="#"){std::cout<<"pass index row"<<std::endl; continue;}           //pass first index line
-
-                for (int i = 0; i < result.size(); i++)                                         // for each element in one line
-                {                                 
-                    switch (i)
-                    {
-                    case 0:                                                                     //first element, node name
-                        tmp_connected =static_cast<std::string>(result[i]);                   
-                        //std::cout<<"parsing elements "<< connected<<"  ";
-                        break;
-                    case 1:                                                                     //second element, cost
-                        tmp_cost=static_cast<std::string>(result[i]);
-                        //std::cout<<stof(tmp_cost)<<"  "; 
-                        break;
-
-                    case 2:                                                                     //third element, route
-                        tmp_route =static_cast<std::string>(result[i]);
-                        //std::cout<<route<<std::endl; 
-                        break;
-
-                    default:                                                                    //exception, wrong element
-                        std::cout<<"unexpected coulumn input"<<std::endl;
-                        break;
-                    }
-                }
-
-                for(auto & current:nodelist)                                                    //searching for all node in nodelist
-                {
-                    if(tmp_connected==current.getName())                                        //if nodename matches with tmp_connected
+                    while(routefile)                                                                   
                     {   
-                        node.setConnection(current);                                            //insert current node to connection_list of mother node 
-                        node.setCost(stof(tmp_cost));                                           //insert cost
-                        node.setRoute(tmp_route);                                               //insert route
-                    }
+                        using namespace rapidjson;
+                        char buf[65536]={};
+                        Waypoint wp_tmp;
+                        routefile.read(buf,65536);
+                        //std::cout<<buf<<std::endl;
+                        Document routebuf;
+                        routebuf.Parse(buf);
+                        //std::cout<<buf<<std::endl;
+                        const Value& mission = routebuf["mission"];
+                        //if(mission.IsObject()){std::cout<<"end of route file"<<std::endl;}
+                    
+                        const Value& items = mission["items"];
+                        
+                        for(int i=0; i<items.Size();i++)
+                        {
+                            
+                            const Value& waypoint=items[i];
+                            const Value& param=waypoint["params"];
+
+                            wp_tmp.param1=param[0].GetFloat();
+                            wp_tmp.param2=param[1].GetFloat();
+                            wp_tmp.param3=param[2].GetFloat();
+                            wp_tmp.param4=NAN;
+                            wp_tmp.Lat_x=param[4].GetDouble();
+                            wp_tmp.Lon_y=param[5].GetDouble();
+                            wp_tmp.Alt_z=param[6].GetDouble();
+                            wp_tmp.autocontinue=true;
+                            wp_tmp.is_current=false;
+                            wp_tmp.frame=0;
+                            wp_tmp.command=16;
+                            route.pushbackWP(wp_tmp);
+                        
+                        }
+                        //printf("%d ", itr->GetInt());
+
+                    } 
+                    routelist.push_back(route);
+                    
+
                 }
 
-            }
-            //############ DEBUGCODE ###########################
-            
-            std::cout<<"connection nodes: ";
-            for(auto & i :connected_nodes){
-                    std::cout<<i<<"  ";
-                }
-            std::cout<<std::endl;
-            
-            std::cout<<"costs:  ";
-            for(auto & i :costs){
-                std::cout<<i<<"  ";   
-            }
-            std::cout<<std::endl;
-            
-            std::cout<<"routes:  ";
-            for(auto & i :routes){
-                std::cout<<i<<"  ";   
-            }
-            std::cout<<std::endl;
-            
-            
-            //node.setConnection(connected_nodes,costs,routes);
+            }      
+
         }
 
-      }
-        //node.printout();
-
-    }*/
-}                             
+    } 
+}                            
 
 void check_open_close(std::vector<NodeCosts>openlist ,std::vector<NodeCosts> closedlist){
     std::cout<<"closedlist"<<std::endl;
@@ -713,15 +629,36 @@ std::vector<Route> waypoint_assembly(std::vector<Node> &resultpath, std::vector<
         Node start_tmp, end_tmp;
         start_tmp=resultpath[i];
         end_tmp=resultpath[i+1];
-          
+        
         std::cout<<"searching for start:  "<<start_tmp.getName()<<"  end:  "<<end_tmp.getName()<<std::endl;
-        Route tmproute = search_route(routelist,start_tmp,end_tmp);
-        route_final.push_back(tmproute);
+        
+        std::vector<Route> searchlist1;
+
+        for(auto & cur:routelist){
+            if(cur.startnode()->getName()==start_tmp.getName()){
+                searchlist1.push_back(cur);
+            }
+        }
+
+        std::vector<Route> searchlist2;
+        for(auto & curr:searchlist1){
+            if(curr.endnode()->getName()==end_tmp.getName()){
+                searchlist2.push_back(curr);
+                //std::cout<<"search1 node: "<<curr.endnode()->getName()<<"search2 node: "<<end.getName()<<std::endl;
+            }
+        }
+
+        if(searchlist2.size()!=1){
+            std::cout<<"start-end seach ended in multi path"<<std::endl;
+        }
+        else
+        {
+            route_final.push_back(searchlist2[0]);
+        }
+            
     }
 
-   // for(auto & cur:route_final){
-   //     cur.printOut();
-   // }
+    return route_final;
 
 }
 
@@ -730,31 +667,71 @@ std::vector<Route> waypoint_assembly(std::vector<Node> &resultpath, std::vector<
     // check last element of resultpath
     // find route has both element
 
-    
+
+void get_cb(const mavros_msgs::HomePosition::ConstPtr& msg)
+{
+  //ros::Duration(3).sleep();
+  hp=*msg;
+
+
+}
 
 
 
 
-int main(){
+int main(int argc, char **argv){
 
-   std::vector<Node> parsedlist;                                                                    //main data pool, do not delete or free                  
-   std::vector<Node> resultpath;
-   std::vector<Route> routelist;
-   std::vector<Route> resultroute;
+    ros::init(argc, argv, "pushing_waypoint");
+    ros::NodeHandle n;
+    ros::ServiceClient wp_clear_client = n.serviceClient<mavros_msgs::WaypointClear>("/mavros/mission/clear"); //("waypoint_clear_client")
+    ros::ServiceClient wp_srv_client = n.serviceClient<mavros_msgs::WaypointPush>("/mavros/mission/push");
+    ros::ServiceClient set_home_client = n.serviceClient<mavros_msgs::CommandHome>("/mavros/cmd/set_home");
+    ros::Subscriber  sub=n.subscribe ("/mavros/home_position/home",1, get_cb);
+    ros::Rate rate(20.0);
 
-   parse_node_file("node.txt",parsedlist);
+
+    mavros_msgs::Waypoint waypoint;
+    mavros_msgs::WaypointPush wp_push_srv;
+    mavros_msgs::CommandHome set_home_srv;
+    mavros_msgs::WaypointClear wp_clear_srv;
+
+
+    set_home_srv.request.current_gps = true;
+
+
+    while(ros::ok())                                    //wait until homeposition set
+    {
+        double lon=hp.geo.longitude;
+        double alt=0;//gp.geo.altitude;
+        double lat=hp.geo.latitude;
+        ros::spinOnce();
+        rate.sleep();
+        if(lon!=0)
+        {
+            break;
+        }
+    }
+
+    std::vector<Node> parsedlist;                                                                    //main data pool, do not delete or free                  
+    std::vector<Node> resultpath;
+    std::vector<Route> routelist;
+    std::vector<Route> resultroute;
+
+    parse_node_file("node.txt",parsedlist);
   
-   parse_connection_file(parsedlist);
+    parse_connection_file(parsedlist);
 
-   parse_route_file(parsedlist,routelist);
+    parse_route_file(parsedlist,routelist);
 
-   a_star_path(parsedlist,resultpath,"Base","C-1");
+    a_star_path(parsedlist,resultpath,"Base","C-1");
 
 
     
-    for(auto & cur:resultpath){
+    for(auto & cur:resultpath)
+    {
         std::cout<< cur.getName()<<"     ";
     }
+    
     std::cout<<std::endl;
 
 
@@ -762,7 +739,14 @@ int main(){
 
     
     
-    
+    for(auto & cur:resultroute)
+    {
+        cur.printOut();
+    }
+    std::cout<<std::endl;
+
+
+
     
     
    // cal_cost(parsedlist);
