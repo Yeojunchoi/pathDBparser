@@ -19,6 +19,10 @@
 
 #define pi 3.14159265358979323846
 #define ALT_DIFF 3
+
+
+boost::filesystem::path dbfolder="/home/airon/Desktop/RouteDatabase";
+std::string dbfolder_string="/home/airon/Desktop/RouteDatabase/";
 //#include "tools.h"
 //#include "graph.h"
 
@@ -79,7 +83,10 @@ std::vector<std::string> tokenize_operator(const std::string& data) {
 }
 
 std::vector<Node> parse_node_file(std::string nodefile,std::vector<Node> &nodelist){
-        std::ifstream in(nodefile);
+        
+        
+
+        std::ifstream in(dbfolder_string+nodefile);
 
         char buf[100];
 
@@ -149,11 +156,15 @@ std::vector<Node> parse_node_file(std::string nodefile,std::vector<Node> &nodeli
 void parse_connection_file(std::vector<Node> &nodelist)                                         //send nodelist reference
 {
   namespace fs=boost::filesystem;                                                               //using boost filesystem
+  
   std::vector<fs::path> files;                                                                  //creating path object
-  fs::path folder=fs::current_path();                                                           //find current path
-  fs::path p=folder.generic_string()+"/connection";                                             //designate connection folder to current path
+    std::cout << BOOST_LIB_VERSION << '\n';
+  //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                           //find current path
+ 
+  fs::path p="/home/airon/Desktop/RouteDatabase/connection";                                             //designate connection folder to current path
+  //fs::path p="/home/airon/pathDB/connection";    
   fs::directory_iterator it{p};                                                                 //boost create folder iterater object
-
+  
   // connection file example(A-1.txt) 
   
   // #	Connected to	cost	route
@@ -167,6 +178,12 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
       }
       it++;                                                                                     //to next iteration
   }
+
+  for(auto & cur:files){
+      std::cout<<cur.generic_string()<<std::endl;
+  }
+
+
 
   for (auto & node :nodelist)                                                                   //for each node in nodelist
   {
@@ -271,8 +288,8 @@ void parse_route_file(std::vector<Node> &nodelist,std::vector<Route> &routelist)
   std::vector<fs::path> folders;
   
                                                               
-  fs::path folder=fs::current_path();                                                          
-  fs::path p=folder.generic_string()+"/route";                                            
+  //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                          
+  fs::path p=dbfolder.generic_string()+"/route";                                            
   fs::directory_iterator it{p};                                                                 
 
   while (it != fs::directory_iterator{})                                        //collect route directory path                    
@@ -683,15 +700,28 @@ int main(){
 
     parse_node_file("node.txt",parsedlist);
   
-    parse_connection_file(parsedlist);
+    //parse_connection_file(parsedlist);
 
-    parse_route_file(parsedlist,routelist);
+    std::cout<<"filesys test "<<std::endl;
+    
+    std::vector<boost::filesystem::path> files;  
+    boost::filesystem::path p{"/home/airon/Desktop/RouteDatabase/connection"};
+    boost::filesystem::directory_iterator it{p};
 
-    a_star_path(parsedlist,resultpath,"Base","C-1");
+    while (it != boost::filesystem::directory_iterator{})                                                        //while iteration end
+    {
+        if(it->status().type()==boost::filesystem::regular_file){                                                //if find regular file, add to files vector
+            files.push_back(it->path());
+        }
+        it++;                                                                                     //to next iteration
+    }
+   //parse_route_file(parsedlist,routelist);
+
+    //a_star_path(parsedlist,resultpath,"Base","C-1");
 
 
     
-    for(auto & cur:resultpath)
+    /*for(auto & cur:resultpath)
     {
         std::cout<< cur.getName()<<"     ";
     }
@@ -708,7 +738,7 @@ int main(){
         cur.printOut();
     }
     std::cout<<std::endl;
-
+*/
 
 
     
