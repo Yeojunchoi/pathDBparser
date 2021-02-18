@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost 1.58.0 REQUIRED COMPONENTS system filesystem regex)
+find_package(Boost 1.62.0 REQUIRED COMPONENTS system filesystem regex)
 #find_package(Rapidjson REQUIRED)
 
 

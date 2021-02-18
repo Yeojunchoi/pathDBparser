@@ -18,6 +18,8 @@
 #include "route.h"
 
 
+#include <ros.h>
+
 
 #define pi 3.14159265358979323846
 #define ALT_DIFF 3
@@ -164,7 +166,7 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
    
   //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                           //find current path
  
-  fs::path p=dbfolder_string+"/connection";                                             //designate connection folder to current path
+  fs::path p=dbfolder_string+"connection";                                             //designate connection folder to current path
   //fs::path p="/home/airon/pathDB/connection";    
   fs::directory_iterator it{p};                                                                 //boost create folder iterater object
   
@@ -291,9 +293,9 @@ void parse_route_file(std::vector<Node> &nodelist,std::vector<Route> &routelist)
   std::vector<fs::path> folders;
   
                                                               
-  //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                          
-  //fs::path p=dbfolder.generic_string()+"/route";      
-  fs::path p=fs::current_path().generic_string()+"/route";                                           
+                                                        
+  fs::path p=dbfolder.generic_string()+"/route";      
+                                        
   fs::directory_iterator it{p};                                                                 
 
   while (it != fs::directory_iterator{})                                        //collect route directory path                    
@@ -706,40 +708,13 @@ int main(){
   
     parse_connection_file(parsedlist);
     
-    fs::path p=fs::current_path();
-    //std::cout<<p.generic_string()<<std::endl;
-    
-/*
-    try
-    {   
+    parse_route_file(parsedlist,routelist);
 
-        for(auto & cur:parsedlist)
-        {
-            cur.printout();
-        }
-        
-         std::cout << BOOST_LIB_VERSION << '\n';
-
-        fs::directory_iterator iter{p};
-
-
-       
-        
-
-    }
-    
-    catch(boost::filesystem::filesystem_error &e)
-    {
-        std::cerr<<e.what()<<std::endl;
-    }
-*/
-   //parse_route_file(parsedlist,routelist);
-
-    //a_star_path(parsedlist,resultpath,"Base","C-1");
+    a_star_path(parsedlist,resultpath,"Base","C-1");
 
 
     
-    /*for(auto & cur:resultpath)
+    for(auto & cur:resultpath)
     {
         std::cout<< cur.getName()<<"     ";
     }
@@ -756,7 +731,7 @@ int main(){
         cur.printOut();
     }
     std::cout<<std::endl;
-*/
+
 
 
     
