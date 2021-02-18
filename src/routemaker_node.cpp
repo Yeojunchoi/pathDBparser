@@ -8,11 +8,13 @@
 #include <boost/filesystem.hpp>
 #include <cmath>
 #include <limits.h>
+#include <boost/version.hpp>
 
 
 
-#include "node.h"
+
 #include "rapidjson/document.h"
+#include "node.h"
 #include "route.h"
 
 
@@ -87,6 +89,7 @@ std::vector<Node> parse_node_file(std::string nodefile,std::vector<Node> &nodeli
         
 
         std::ifstream in(dbfolder_string+nodefile);
+        //std::ifstream in(nodefile);
 
         char buf[100];
 
@@ -158,10 +161,10 @@ void parse_connection_file(std::vector<Node> &nodelist)                         
   namespace fs=boost::filesystem;                                                               //using boost filesystem
   
   std::vector<fs::path> files;                                                                  //creating path object
-    std::cout << BOOST_LIB_VERSION << '\n';
+   
   //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                           //find current path
  
-  fs::path p="/home/airon/Desktop/RouteDatabase/connection";                                             //designate connection folder to current path
+  fs::path p=dbfolder_string+"/connection";                                             //designate connection folder to current path
   //fs::path p="/home/airon/pathDB/connection";    
   fs::directory_iterator it{p};                                                                 //boost create folder iterater object
   
@@ -289,7 +292,8 @@ void parse_route_file(std::vector<Node> &nodelist,std::vector<Route> &routelist)
   
                                                               
   //fs::path folder="/home/airon/Desktop/RouteDatabase";                                                          
-  fs::path p=dbfolder.generic_string()+"/route";                                            
+  //fs::path p=dbfolder.generic_string()+"/route";      
+  fs::path p=fs::current_path().generic_string()+"/route";                                           
   fs::directory_iterator it{p};                                                                 
 
   while (it != fs::directory_iterator{})                                        //collect route directory path                    
@@ -697,24 +701,38 @@ int main(){
     std::vector<Node> resultpath;
     std::vector<Route> routelist;
     std::vector<Route> resultroute;
-
+    namespace fs= boost::filesystem;
     parse_node_file("node.txt",parsedlist);
   
-    //parse_connection_file(parsedlist);
-
-    std::cout<<"filesys test "<<std::endl;
+    parse_connection_file(parsedlist);
     
-    std::vector<boost::filesystem::path> files;  
-    boost::filesystem::path p{"/home/airon/Desktop/RouteDatabase/connection"};
-    boost::filesystem::directory_iterator it{p};
+    fs::path p=fs::current_path();
+    //std::cout<<p.generic_string()<<std::endl;
+    
+/*
+    try
+    {   
 
-    while (it != boost::filesystem::directory_iterator{})                                                        //while iteration end
-    {
-        if(it->status().type()==boost::filesystem::regular_file){                                                //if find regular file, add to files vector
-            files.push_back(it->path());
+        for(auto & cur:parsedlist)
+        {
+            cur.printout();
         }
-        it++;                                                                                     //to next iteration
+        
+         std::cout << BOOST_LIB_VERSION << '\n';
+
+        fs::directory_iterator iter{p};
+
+
+       
+        
+
     }
+    
+    catch(boost::filesystem::filesystem_error &e)
+    {
+        std::cerr<<e.what()<<std::endl;
+    }
+*/
    //parse_route_file(parsedlist,routelist);
 
     //a_star_path(parsedlist,resultpath,"Base","C-1");

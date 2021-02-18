@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 3.0.2)
 project(routemaker)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
+
+#set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Boost 1.58.0 REQUIRED COMPONENTS system filesystem regex)
 #find_package(Rapidjson REQUIRED)
 
 
@@ -121,7 +126,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
-  ${Boost_INCLUDE_DIRS}
+  usr/local/include/boost
+  #${Boost_INCLUDE_DIRS}
   #${rapidjson_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 
@@ -155,13 +161,19 @@ add_library(${PROJECT_NAME}
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(${PROJECT_NAME}_node 
+${${PROJECT_NAME}_EXPORTED_TARGETS}
+ ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
-   ${Boost_FILESYSTEM_LIBRARY}
-   ${Boost_SYSTEM_LIBRARY}
+   #${Boost_FILESYSTEM_LIBRARY}
+   #${Boost_SYSTEM_LIBRARY}
+   #${Boost_LIBRARIES}
+   #boost_system
+   #boost_filesystem
  )
 
 #############
