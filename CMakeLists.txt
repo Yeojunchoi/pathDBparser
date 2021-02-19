@@ -126,7 +126,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
-  usr/local/include/boost
   #${Boost_INCLUDE_DIRS}
   #${rapidjson_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -172,8 +171,7 @@ ${${PROJECT_NAME}_EXPORTED_TARGETS}
    #${Boost_FILESYSTEM_LIBRARY}
    #${Boost_SYSTEM_LIBRARY}
    #${Boost_LIBRARIES}
-   #boost_system
-   #boost_filesystem
+  
  )
 
 #############
